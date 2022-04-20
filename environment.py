@@ -12,6 +12,9 @@ class Environment:
 	def get_search_space(self):
 		return self.search_space
 
+	def get_state_space(self):
+		return self.search_space
+
 	def get_action_space(self):
 		return self.action_space
 
@@ -31,17 +34,17 @@ class Environment:
 class GridWorld(Environment):
 	def __init__(self, n, start_state, terminal_states):
 		"""
-		Initializes a GridWorld environment, whose search space is a list of tuples from the range (0, n-1) to... (n-1, n-1) and whose
+		Initializes a GridWorld environment, whose state space is a list of tuples from the range (0, n-1) to... (n-1, n-1) and whose
 		action space is the list ["left", "right", "up", "down"].
-		start_state: a tuple in the search_space that is the start_state for the agent.
-		terminal_states: a list of tuples in the search space that represent the terminal states for the environment.
+		start_state: a tuple in the state_space that is the start_state for the agent.
+		terminal_states: a list of tuples in the state space that represent the terminal states for the environment.
 		"""
-		search_space = []
+		state_space = []
 		for i in range(n * n):
 			x = i // n
 			y = i % n
-			search_space.append((x, y))
-		Environment.__init__(self, search_space, ['left', 'right', 'up', 'down'], start_state)
+			state_space.append((x, y))
+		Environment.__init__(self, state_space, ['left', 'right', 'up', 'down'], start_state)
 		self.terminal_states = terminal_states
 		self.n = n
 
