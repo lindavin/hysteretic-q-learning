@@ -12,14 +12,14 @@ class Agent:
 	def update(self, state, reward, t):
 		self.accumulated_reward += reward
 
-	def action_selection(self, state=None, t=None, possible_actions=None):
+	def action_selection(self, state=None, possible_actions=None, *args, **kwargs):
 		pass
 
 class RandomAgent(Agent):
 	def __init__(self, environment):
 		Agent.__init__(self, environment)
 	
-	def action_selection(self, state, t=None, possible_actions=None):
+	def action_selection(self, state=None, possible_actions=None, *args, **kwargs):
 		return random.choice(self.environment.action_space)
 	
 
@@ -52,12 +52,12 @@ class QLearner(TDLearner):
 			state_action_values[state] = temp
 		self.q_values = state_action_values
 
-	def action_selection(self, state, t):
+	def action_selection(self, state=None, possible_actions=None, *args, **kwargs):
 		action_space = self.environment.action_space
 		action_values = np.zeros(len(action_space))
 		for i, action in enumerate(action_space):
 			action_values[i] = self.q_values[state][action]
-		action = self.policy(action_space, action_values, t)
+		action = self.policy(action_space, action_values, *args, **kwargs)
 		self.action = action
 		return action
 
