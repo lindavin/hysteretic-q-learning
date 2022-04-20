@@ -12,14 +12,14 @@ class Agent:
 	def update(self, state, reward, t):
 		self.accumulated_reward += reward
 
-	def action_selection(self, state, t=None):
+	def action_selection(self, state=None, t=None, possible_actions=None):
 		pass
 
 class RandomAgent(Agent):
 	def __init__(self, environment):
 		Agent.__init__(self, environment)
 	
-	def action_selection(self, state, t=None):
+	def action_selection(self, state, t=None, possible_actions=None):
 		return random.choice(self.environment.action_space)
 	
 
@@ -45,7 +45,7 @@ class QLearner(TDLearner):
 			warnings.warn("Overriding Q-Values....")
 
 		state_action_values = {}
-		for state in self.environment.search_space:
+		for state in self.environment.get_state_space():
 			temp = {}
 			for action in self.environment.action_space:
 				temp[action] = 0
