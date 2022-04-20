@@ -6,10 +6,14 @@ import numpy as np
 # T is the system temperature
 def boltzman_distribution(Q, T):
     # Populate array of action selection probabilities    
-    P = []
-    for i in range(len(Q)):
-        P[i] = e**(Q[i]/(k*T))
+    #P = []
+    #for i in range(len(Q)):
+    #    P[i] = e**(Q[i]/(k*T))
     
+    # DOn't know python does this work
+    P = Q
+    P[:] = [(e**(x/(k*T))) for x in P]
+
     # Calculate canonical partition function, divide all probabilities by it so sum <= 1
     CPF = sum(P)
     P[:] = [x / CPF for x in P]
