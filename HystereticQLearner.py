@@ -46,7 +46,7 @@ class HystereticQLearner(TDLearner):
 			state_action_values[state] = temp
 		self.q_values = state_action_values
 
-	def action_selection(self, state, t=None, possible_actions=None):
+	def action_selection(self, state, t=None, possible_actions=None, *args, **kwargs):
 		action_space = self.environment.get_action_space()
 		temp = action_space if not callable(action_space) else action_space(state)
 		possible_actions = possible_actions if possible_actions is not None else temp
@@ -55,4 +55,4 @@ class HystereticQLearner(TDLearner):
 
 		for i, action in enumerate(possible_actions):
 			action_values[i] = self.q_values[state][action]
-		return self.policy(possible_actions, action_values, t)
+		return self.policy(possible_actions, action_values, t, *args, **kwargs)
