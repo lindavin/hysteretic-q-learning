@@ -17,16 +17,16 @@ def boltzmann_distribution(Q, T):
     # P[:] = [(Decimal(e)**(Decimal(x)/(Decimal(k)*Decimal(T)))) for x in P]
     # Remove k constant to again avoid overflow errors
     P[:] = [(Decimal(e)**(Decimal(x)/(Decimal(T)))) for x in P]
-    print("P1: {}".format(P))
+    # print("P1: {}".format(P))
     # Calculate canonical partition function, divide all probabilities by it so sum <= 1
     CPF = sum(P)
-    print("CPF: {}".format(CPF))
+    # print("CPF: {}".format(CPF))
     P[:] = [Decimal(x) / Decimal(CPF) for x in P]
-    print("P2: {}".format(P))
+    # print("P2: {}".format(P))
 
     return P                    # Return array of probabilities
 
 # A is list of actions, Q is estimated value of each action, T is system temperature
 def selection(A, Q, T):
-    print("calling boltzmann")
+    # print("calling boltzmann")
     return np.random.choice(A, p=boltzmann_distribution(Q, T))
