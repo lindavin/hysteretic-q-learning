@@ -283,12 +283,13 @@ class Predator(Environment):
     def respond_to_action(self, action):
 
         p1_state, p2_state = self.get_new_state(action)
-
+        reward = 0
         # If terminal state, reset positions
         if self.isTerminalState((p1_state, p2_state)):
             if ((p1_state == (0, 0) and p2_state in self.supportStates) or
                     (p2_state == (0, 0) and p1_state in self.supportStates)):
                 reward = 10
+                print("CAPTURED")
             else:
                 reward = -50
 
@@ -305,9 +306,10 @@ class Predator(Environment):
                 moves.append('up')
             if not (p1_state == (0, 1)) or (p2_state == (0, 1)):
                 moves.append('down')
-            mouse_action = moves[randint(0, len(moves))]
+
+            mouse_action = moves[randrange(0, len(moves))]
             p1_state, p2_state = self.get_new_state(
-                (mouse_action, mouse_action), mouse=True)
+                (mouse_action, mouse_action), mouse_move=True)
 
         self.current_state = (p1_state, p2_state)
         return reward, (p1_state, p2_state)
