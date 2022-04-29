@@ -153,7 +153,7 @@ class Boutilier(Environment):
     def get_new_state(self, action, state=None):
 
         if state is None:
-            state = self.current_state()
+            state = self.current_state
 
         if state == 1:
             if action[0] == 'a':
@@ -167,6 +167,8 @@ class Boutilier(Environment):
                 new_state = 5
         elif state == 3:
             new_state = 6
+        else:
+            print("Unexpected case!!!")
 
         return new_state
 
