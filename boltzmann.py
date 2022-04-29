@@ -15,7 +15,7 @@ def boltzmann_distribution(Q, T):
             highInfIndex = i
 
     if highInf != 0 and highInfIndex != -1:
-        P[:] = 0
+        P = np.zeros(len(Q))
         P[highInfIndex] = 1
         return P
 
