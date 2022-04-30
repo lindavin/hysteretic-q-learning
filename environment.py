@@ -178,16 +178,18 @@ class Boutilier(Environment):
 
 # Predator game helpers
 def bound_coordinate(x):
-    if (x < -4):
-        dif = -4 - x
-        assert dif == 1, f"dif is greater than 1, got: {dif}"
-        return 5
-    elif (x > 5):
-        dif = x - 5
-        assert dif == 1, f"dif is greater than 1, got: {dif}"
-        return -4
-    else:
-        return x
+    return ((x+4) % 10)-4
+
+    # if (x < -4):
+    #     dif = -4 - x
+    #     assert dif == 1, f"dif is greater than 1, got: {dif}"
+    #     return 5
+    # elif (x > 5):
+    #     dif = x - 5
+    #     assert dif == 1, f"dif is greater than 1, got: {dif}"
+    #     return -4
+    # else:
+    #     return x
 
 
 def random_pos():
@@ -218,9 +220,13 @@ class Predator(Environment):
         # Give each predator a unique starting space
         self.agent1_pos, self.agent2_pos = random_pos()
         self.supportStates = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        self.captureCount = 0
 
         Environment.__init__(self, state_space, ['left', 'right', 'up', 'down', 'stay'],
                              (self.agent1_pos, self.agent2_pos))
+
+    def resetCaptues(self):
+        self.captureCount = 0
 
     def isTerminalState(self, state):
         pos1 = state[0]
@@ -291,7 +297,8 @@ class Predator(Environment):
             if ((p1_state == (0, 0) and p2_state in self.supportStates) or
                     (p2_state == (0, 0) and p1_state in self.supportStates)):
                 reward = 10
-                print("CAPTURED")
+                self.captureCount += 1
+                # print("CAPTURED")
             else:
                 reward = -50
 
