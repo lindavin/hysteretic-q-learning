@@ -14,7 +14,7 @@ def simulate_task(agents: List[Agent], task: Environment, t=0, system_temperatur
         return a.action_selection(s, None, T)
 
     while not task.isTerminalState(state) and t < timesteps:
-        t += 1
+
 #         actions = tuple((lambda a: a.action_selection(state, None, T), agents))
         actions = tuple((action_lambda(agent, state, T, idx)
                         for idx, agent in enumerate(agents)))
@@ -26,4 +26,8 @@ def simulate_task(agents: List[Agent], task: Environment, t=0, system_temperatur
         agents[1].update(state, actions[1], new_state, reward)  # , t)
 
         state = new_state
+        t += 1
     return t, T
+
+def find_greedy_action_for_state(agent, state):
+    return max(agent.q_values[state], key=agent.q_values[state].get)
