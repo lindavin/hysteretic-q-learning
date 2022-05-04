@@ -1,4 +1,4 @@
-from random import randint, randrange, random
+from random import randint, randrange, random, sample, choice
 
 
 class Environment:
@@ -324,6 +324,171 @@ class Predator(Environment):
         return reward, (p1_state, p2_state)
 
 
+def make_grid_space(n):
+    arr = []
+    for i in range(n):
+        for j in range(n):
+            arr.append((i,j))
+            
+    return arr
+
+class Predator2(Environment):
+    def __init__(self, n = 10):
+        state_space = []
+        import math
+        up_bound = math.floor(n/2)
+        low_bound = math.floor(n/2) * 1
+        if(n % 2 == 0):
+            up_bound += 1
+            low_bound += 1
+        
+        for x1 in range(-4, 6):
+            for y1 in range(-4, 6):
+                for x2 in range(-4, 6):
+                    for y2 in range(-4, 6):
+                        state_space.append(((x1, y1), (x2, y2)))
+        self.agent1_pos, self.agent2_pos = random_pos()
+        self.supportStates = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        self.captureCount = 0
+        
+        self.true_space = make_grid_space(10)
+        self.current_true_state = self.get_new_true_state()
+        
+        
+        Environment.__init__(self, state_space, ['left', 'right', 'up', 'down', 'stay'],
+                             lambda: self.observe_state(self.get_new_start_state(True)))
+        
+    def get_new_start_state(self, set_self=False):
+        new_state = self.get_new_true_state()
+        if(set_self):
+            self.current_true_state = new_state
+        return new_state
+    
+    def observe_state(self, state=None):
+        if state is not None:
+            rel_state = self.process_states(*state)
+        else:
+            rel_state = self.process_states(*self.current_true_state)
+        return rel_state[1], rel_state[2]
+    
+    def get_new_true_state(self):
+        return [self.true_space[i] for i in sample(range(100), 3)]
+    
+    def update_ind_state(self, state, action):
+        if(action == 'left'):
+            return ((state[0]-1)%10, state[1])
+        elif(action == 'right'):
+            return ((state[0]+1)%10, state[1])
+        elif(action == 'up'):
+            return (state[0], (state[1] - 1)%10 )
+        elif(action == 'down'):
+            return (state[0], (state[1] + 1)%10 )
+        elif(action == 'stay'):
+            return state
+        else:
+            print("Unknown case!")
+    
+    def process_mouse_pred(self, mouse_state, single_pred_state):
+        # returns the relative states        
+        bound_x = (mouse_state[0] - 4, mouse_state[0] + 5)
+        bound_y = (mouse_state[1] - 4, mouse_state[1] + 5)
+        if(single_pred_state[0] in range(bound_x[0], bound_x[1] + 1)):
+            rel_x = single_pred_state[0] - mouse_state[0]
+        else:
+            # print("x out")
+            rel_x = ((single_pred_state[0] + 5) % 10) - ((mouse_state[0] + 5) % 10)
+            
+        if(single_pred_state[1] in range(bound_y[0], bound_y[1] + 1)):
+            rel_y = single_pred_state[1] - mouse_state[1]
+        else:
+            # print("y out")
+            rel_y = ((single_pred_state[1] + 5) % 10) - ((mouse_state[1] + 5) % 10)
+        
+        # sanity check
+        if(rel_x not in range(-4, 6)):
+            print("WARNING rel x not in correct bounds")
+        if(rel_y not in range(-4, 6)):
+            print("WARNING rel y not in correct bounds")
+            
+        return rel_x, rel_y
+    
+    def process_states(self, mouse_state, pred_one_state, pred_two_state):
+        # returns the relative states        
+        return (0,0), self.process_mouse_pred(mouse_state, pred_one_state), self.process_mouse_pred(mouse_state, pred_two_state)
+    
+    def isTerminalState(self, observable_state):
+        # observable state is the two relative states
+        if(observable_state[0] == observable_state[1]):
+            return True
+        
+        return ((0, 0) == observable_state[0]) or ((0,0) == observable_state[1])
+
+    
+    def is_terminal_state(self, mouse_state, pred_one_state, pred_two_state):
+        if(pred_one_state == pred_two_state):
+            return True
+        
+        return (mouse_state == pred_one_state) or (mouse_state == pred_two_state)
+    
+    def resetCaptures(self):
+        self.captureCount = 0
+    
+    def show_true_grid(self):
+        import numpy as np
+        grid = np.zeros((10, 10))
+        mouse = self.current_true_state[0]
+        pred1 = self.current_true_state[1]
+        pred2 = self.current_true_state[2]
+        grid[mouse[1]][mouse[0]] = -1 # mouse
+        grid[pred1[1]][pred1[0]] = 1 # cat1
+        grid[pred2[1]][pred2[0]]= 2 # cat2
+        print(grid)
+    
+    def respond_to_action(self, action):
+        true_pred_state  = [self.current_true_state[1], self.current_true_state[2]]
+        mouse_true_state = self.current_true_state[0]
+        
+        if (random() >= 0.2): # predator game is stochastic 
+            new_pred_state = [self.update_ind_state(state, action[i]) for i, state in enumerate(true_pred_state)]
+        else:
+            new_pred_state = [self.update_ind_state(state, choice(self.action_space)) for i, state in enumerate(true_pred_state)]
+        
+        rel_states = self.process_states(mouse_true_state, *new_pred_state)
+        
+        if(self.is_terminal_state(mouse_true_state, *new_pred_state)):
+            # Don't update the environment state. State must reset.
+            # need to distinguish crash and capture attempt for resets
+            if(new_pred_state[0] == new_pred_state[1]):
+                # crash!
+                # print("Crash.")
+                return -50, (rel_states[1], rel_states[2])
+            else:
+                # capture attempt
+                if((rel_states[1] in self.supportStates) or (rel_states[2] in self.supportStates)):
+                    # success! capture attempt with support!
+                    self.captureCount += 1
+                    # print("Captured!")
+                    return 10, (rel_states[1], rel_states[2])
+                # attempt without support!
+                # print("Capture without suppport.")
+                return -50, (rel_states[1], rel_states[2])
+        
+        # mouse moves after predators move
+        if(random() >= 0.2):
+            possible_new_states = []
+            for action in ['left', 'right', 'up', 'down']:
+                new_state = self.update_ind_state(mouse_true_state, action)
+                if(new_state not in new_pred_state):
+                    possible_new_states.append(new_state)
+            new_mouse_state = choice(possible_new_states)
+        else:
+            new_mouse_state = mouse_true_state
+        
+        self.current_true_state = [new_mouse_state, *new_pred_state]
+        rel_states = self.process_states(*self.current_true_state)
+        
+        return 0, (rel_states[1], rel_states[2])
+    
 class GridWorld(Environment):
     def __init__(self, n, start_state, terminal_states):
         """
