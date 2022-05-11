@@ -21,8 +21,8 @@ def simulate_task(agents: List[Agent], task: Environment, t=0, system_temperatur
         actions = tuple((action_lambda(agent, state, T, idx)
                         for idx, agent in enumerate(agents)))
         if(T is not None):
-            # T = T * 0.99
-            T = T * (e**(-0.003))
+            T = T * 0.99
+            # T = T * (e**(-0.003))
         reward, new_state = task.respond_to_action(actions)
         if(return_acc_reward):
             acc_reward += reward
